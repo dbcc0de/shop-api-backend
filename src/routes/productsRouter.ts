@@ -51,4 +51,34 @@ productsRouter.get("/products/:id", async (req, res) => {
   }
 });
 
+productsRouter.post("/products", async (req, res) => {
+  try {
+    const newProduct: Product = req.body;
+    const client = await getClient();
+    client.db().collection<Product>("products").insertOne(newProduct);
+    res.status(200).json(newProduct);
+  } catch (error) {
+    errorResponse(error, res);
+  }
+});
+
+productsRouter.put("/products/:id", async (req, res) => {
+  try {
+    const _id: ObjectId = new ObjectId(req.params.id);
+    const updatedProduct: Product = req.body;
+    const client = await getClient();
+    const result = await client
+      .db()
+      .collection<Product>("products")
+      .replaceOne({ _id }, updatedProduct);
+    if (result.matchedCount) {
+      res.status(200).json(updatedProduct);
+    } else {
+      res.status(404).json({ message: `Product not found` });
+    }
+  } catch (error) {
+    errorResponse(error, res);
+  }
+});
+
 export default productsRouter;
